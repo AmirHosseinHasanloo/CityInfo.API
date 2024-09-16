@@ -66,5 +66,6 @@ namespace CityInfo.API.DbContexts
         }
         public DbSet<City> Cities { get; set; } = null!;
         public DbSet<PointOfIntrest> PointOfIntrests { get; set; } = null!;
+        public DbSet<CityInfoUser> CityUsers { get; set; } = null!;
     }
 }
