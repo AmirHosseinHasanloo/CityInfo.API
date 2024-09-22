@@ -1,30 +1,34 @@
-﻿using CityInfo.API.DbContexts;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using CityInfo.API.DbContexts;
 using CityInfo.API.DTOs.Authenticate;
-using CityInfo.API.Utilities.Security;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using AutoMapper;
+using CityInfo.API.Entites;
+using CityInfo.API.Repositories;
 
 namespace CityInfo.API.Controllers
 {
     [Route("api/authentication")]
     [ApiController]
-
     public class AuthenticationController : ControllerBase
     {
         private CityInfoContext _context;
-        private ValidateUser _validateUser;
+        private IValidateRepository _validateUser;
         private IConfiguration _configuration;
+        private IMapper _mapper;
+        private IUserRepository _userRepository;
 
-        public AuthenticationController(CityInfoContext context, ValidateUser validateUser,
-            IConfiguration configuration)
+        public AuthenticationController(CityInfoContext context, IValidateRepository validateUser,
+            IConfiguration configuration, IMapper mapper, IUserRepository userRepository)
         {
             _context = context;
             _validateUser = validateUser;
             _configuration = configuration;
+            _mapper = mapper;
+            _userRepository = userRepository;
         }
 
         [HttpPost("Authentication")]
@@ -32,19 +36,48 @@ namespace CityInfo.API.Controllers
         {
             var user = _validateUser
                 .ValidateUserCredentials(authenticateRequestBody.userName
-                , authenticateRequestBody.password);
+                    , authenticateRequestBody.password);
 
-            if (user == null)
+            if (user != null)
             {
-                return Unauthorized();
+                return BadRequest();
             }
 
             var securityKey = new SymmetricSecurityKey
-                (
+            (
                 Encoding.ASCII.GetBytes(_configuration["Authentication:SecretForKey"])
-                );
+            );
+            var signingCredentials =
+                new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
-            return Ok();
+
+            var mappedUser = _mapper.Map<CityInfoUser>(authenticateRequestBody);
+// default values
+            mappedUser.City = "karaj";
+            mappedUser.firstName = "default";
+            mappedUser.lastName = "default";
+
+            _userRepository.AddUser(mappedUser);
+
+            var cliamsForToken = new List<Claim>()
+            {
+                new Claim("userId", mappedUser.UserId.ToString()),
+                new Claim("userName", mappedUser.userName.ToString()),
+                new Claim(ClaimTypes.Country, mappedUser.City)
+            };
+
+            var jwtSecurityToken = new JwtSecurityToken
+            (
+                _configuration["Authentication:Issuer"],
+                _configuration["Authentication:Audience"],
+                cliamsForToken,
+                DateTime.UtcNow,
+                DateTime.UtcNow.AddHours(1),
+                signingCredentials
+            );
+            var TokenForReturn = new JwtSecurityTokenHandler()
+                .WriteToken(jwtSecurityToken);
+            return Ok(TokenForReturn);
         }
     }
 }

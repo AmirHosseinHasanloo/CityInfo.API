@@ -16,7 +16,7 @@ namespace CityInfo.API.Services
         public void Send(string subject, string body)
         {
             Console.WriteLine($"mail from {_SendFromTo} sended to {_SendTo} " +
-                $",with {nameof(LocalMailService)}");
+                              $",with {nameof(LocalMailService)}");
 
             //MailMessage mail = new MailMessage();
             //SmtpClient SmtpServer = new SmtpClient("smtp.gmail.com");

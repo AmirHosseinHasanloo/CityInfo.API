@@ -44,6 +44,14 @@ builder.Services.AddSingleton<CitiesDataStore>();
 
 builder.Services.AddScoped<ICityInfoRepository, CityInfoRepository>();
 
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+
+#region Authorize
+
+builder.Services.AddScoped<IValidateRepository, ValidateRepository>();
+
+#endregion
+
 #endregion
 
 #region Context

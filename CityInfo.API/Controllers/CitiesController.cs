@@ -4,12 +4,14 @@ using CityInfo.API.Repositories;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using System.Xml.Linq;
+using Microsoft.AspNetCore.Authorization;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace CityInfo.API.Controllers
 {
     [Route("api/Cities")]
+    [Authorize]
     [ApiController]
     public class CitiesController : ControllerBase
     {

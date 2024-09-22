@@ -17,7 +17,7 @@ namespace CityInfo.API.Services
         public void Send(string subject, string body)
         {
             Console.WriteLine($"mail from {_SendFromTo} sended to {_SendTo} " +
-                 $",with {nameof(LocalMailService)} in cloud mail service");
+                              $",with {nameof(LocalMailService)} in cloud mail service");
 
             Console.WriteLine($"subject {subject}");
             Console.WriteLine($"body {body}");
